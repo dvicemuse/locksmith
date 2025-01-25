@@ -1,0 +1,28 @@
+body { background: rgb(75,194,255); color:#fff; overflow:hidden !important; }
+input::placeholder { font-size: 10px; opacity: 0.6 !important; }
+input[disabled]::placeholder { opacity: 0 !important; }
+input[disabled] { color:#fff !important; }
+.form-control,.btn { border-radius:0 !important; }
+.container { width:498px; }
+#port { width: 80px; }
+input:not([disabled]) { background-color: rgba(255,255,255,0.5) !important; }
+input[disabled], input[readonly]{ background-color: rgba(0,0,0,0.2) !important; }
+*:focus { box-shadow: none !important; }
+input:focus { background-color: rgba(255,255,255,0.8) !important; }
+input[type=text].is-invalid {background-color: rgb(255, 199, 199) !important;}
+*:not(input) { user-select: none !important }
+.password-input-container {
+    position: relative;
+}
+
+.password-input {
+    padding-right: 32px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer !important;
+    z-index: 9999;
+}
