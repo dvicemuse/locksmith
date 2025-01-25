@@ -12,7 +12,8 @@ module.exports = {
       './src/locksmith-icon.ico'
     ],
     ignore: [
-      './out'
+      './out',
+      './dist'
     ],
     appCategoryType: 'public.app-category.developer-tools'
   },
