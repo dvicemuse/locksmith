@@ -14,7 +14,8 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "export NODE_OPTIONS=--disable-warning=DEP0174; electron-forge make"
+    "make": "export NODE_OPTIONS=--disable-warning=DEP0174; electron-forge make",
+    "makeall": "npm run make -- --platform=linux --arch=x64 --overwrite; npm run make -- --platform=win32 --arch=x64 --overwrite; npm run make -- --platform=darwin --arch=x64 --overwrite"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-deb": "^7.6.0",
+    "@electron-forge/maker-dmg": "^7.6.1",
     "@electron-forge/maker-rpm": "^7.6.0",
     "@electron-forge/maker-squirrel": "^7.6.0",
     "@electron-forge/maker-zip": "^7.6.0",
@@ -29,5 +31,6 @@
     "@electron-forge/plugin-fuses": "^7.6.0",
     "@electron/fuses": "^1.8.0",
     "electron": "33.3.1"
-  }
+  },
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }
