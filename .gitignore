@@ -2,3 +2,6 @@ node_modules
 out
 .DS_Store
 package-lock.json
+._forge.config.js
+._package.json
+src/._main.js

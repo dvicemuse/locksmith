@@ -2,6 +2,74 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu} = require('electron');
 const path = require('node:path');
 
+// this should be placed at top of main.js to handle setup events quickly
+if (handleSquirrelEvent()) {
+  // squirrel event handled and app will exit in 1000ms, so don't do anything else
+  return;
+}
+
+function handleSquirrelEvent() {
+  if (process.argv.length === 1) {
+    return false;
+  }
+
+  const ChildProcess = require('child_process');
+  const path = require('path');
+
+  const appFolder = path.resolve(process.execPath, '..');
+  const rootAtomFolder = path.resolve(appFolder, '..');
+  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+  const exeName = path.basename(process.execPath);
+
+  const spawn = function(command, args) {
+    let spawnedProcess, error;
+
+    try {
+      spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
+    } catch (error) {}
+
+    return spawnedProcess;
+  };
+
+  const spawnUpdate = function(args) {
+    return spawn(updateDotExe, args);
+  };
+
+  const squirrelEvent = process.argv[1];
+  switch (squirrelEvent) {
+    case '--squirrel-install':
+    case '--squirrel-updated':
+      // Optionally do things such as:
+      // - Add your .exe to the PATH
+      // - Write to the registry for things like file associations and
+      //   explorer context menus
+
+      // Install desktop and start menu shortcuts
+      spawnUpdate(['--createShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-uninstall':
+      // Undo anything you did in the --squirrel-install and
+      // --squirrel-updated handlers
+
+      // Remove desktop and start menu shortcuts
+      spawnUpdate(['--removeShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-obsolete':
+      // This is called on the outgoing version of your app before
+      // we update to the new version - it's the opposite of
+      // --squirrel-updated
+
+      app.quit();
+      return true;
+  }
+};
+
 //DISABLE THE APPLICATION MENU
 Menu.setApplicationMenu(null);
 
@@ -26,10 +94,15 @@ let appMethods = {
 	},
 
 	testSSH: (e, data) => {
-		
-		var q = sshPassPath+" -v -p "+data.password+" ssh -ff -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -p "+data.port+" "+data.userName+"@"+data.host+" whoami";
 
-		runBash(e, q, function(d){
+		if(platformMode == 'win'){
+
+			var d = {
+				err: false,
+				msg: 'connected successfully',
+				eventHash: e.eventHash,
+			}
+
 			if(d.err){
 				dialog.showErrorBox("Something went wrong", "An error occurred. Message: "+d.msg);
 			}
@@ -39,8 +112,28 @@ let appMethods = {
 					detail: 'Successfully connected to the server',
 				})
 			}
-			e.event.sender.send('fromMain', {err: d.err, eventName: 'testSSH', msg: d.msg, eventHash: d.eventHash});
-		});
+
+			e.event.sender.send('fromMain', {err: d.err, eventName: 'testSSH', msg: d.msg, eventHash: e.eventHash});
+		}
+
+		else if(platformMode == 'linux' || platformMode == 'mac'){
+			var q = sshPassPath+" -v -p "+data.password+" ssh -ff -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -p "+data.port+" "+data.userName+"@"+data.host+" whoami";
+
+			runBash(e, q, function(d){
+				if(d.err){
+					dialog.showErrorBox("Something went wrong", "An error occurred. Message: "+d.msg);
+				}
+				else{
+					dialog.showMessageBoxSync({
+						message: 'Hell yeah!',
+						detail: 'Successfully connected to the server',
+					})
+				}
+				e.event.sender.send('fromMain', {err: d.err, eventName: 'testSSH', msg: d.msg, eventHash: d.eventHash});
+			});
+		}
+
+
 	},
 
 	setWindowSize: (e, data) => {
@@ -164,6 +257,7 @@ function createWindow() {
 
 	//WINDOWS REQUIRES PLINK
 	else{
+		checkForPlink();
     	//check for plink
 	}
 
@@ -230,46 +324,86 @@ function runBash(...args) {
 	});
 }
 
-async function sshpassExistCheck(maxIterations = 10, iteration = 1){
+async function runWinCmd(...args) {
 
-	return new Promise(async (resolve, reject) => {
+	var callback, eventName, cmd;
+	var eventData = {event : null, eventName : null, eventHash : null};
 
-		if(sshPassPath != '') return resolve(sshPassPath);
+	for(var x in args){
+		if(typeof(args[x]) == 'function') callback = args[x];
+		else if(typeof(args[x]) == 'string'){
+			if(typeof(appMethods[x]) == 'function') eventData.eventName = args[x];
+			else cmd = args[x];
+		}
+		else if(typeof(args[x]) == 'object') for(y in args[x]) for(z in eventData) if(z == y) eventData[z] = args[x][y];
+	}
 
-		if(iteration >= maxIterations) return reject('Max iterations exceeded without finiding sshpass');
+	e         = eventData.event;
+	eventName = eventData.event;
+	eventHash = eventData.eventHash;
 
-		if(ssshepassPath == ''){
+	if(!cmd){
+		if(typeof(callback) == 'function') callback({err: true, eventHash: eventHash, eventName: eventName, msg: "No command supplied"});
+		throw "No command supplied";
+	}
+	let execFile = require('child_process').execFile;
+	execFile = require('util').promisify(execFile);
+	let response;
 
-			if(iteration > 1) await sleep(5000);
+	execFile('cmd.exe', ['/c', cmd], {windowsHide: true}).then(
+		(result) => {
+			response = {err: false, eventHash: eventHash, eventName: eventName, msg: result.stdout};
+			if(typeof(callback) == 'function') callback(response);
+		},
+		(err) => {
+			response = {err: true, eventHash: eventHash, eventName: eventName, msg: err};
+			if(typeof(callback) == 'function') callback(response);
+		}
+	);
 
-			var permCheck = platformMode == 'linux' ? '-executable' : '-perm +111';
+	return response;
 
-			//TRY TO FIND THE PATH TO SSHPASSS
-			runBash('find /usr /opt -type f -name "sshpass" '+permCheck+' -print -quit 2>/dev/null', (d) => {
+}
 
-				//CHECK FOR A NON ERROR MESSAGE CONTAINING A PATH TO SSHPASS
-				if(!d.err && d.msg.trim().length){
+function checkForPlink(){
 
-					//SPLIT THE LINES INTO AN ARRAY
-					var msgParts = d.msg.split('\n');
+	var q = 'plink --help';
 
-					//LOOP THROUGH THE LINES
-					for(var x in msgParts){
+	runWinCmd(q, (d) => {
+		if(d.err){
 
-						//CHECK IF THE LINE IS NOT EMPTY
-						if(msgParts[x].trim().length){
+			//SHOW A DIALOG BOX
+			dialog.showMessageBox({
+				type 	: 'question',
+				title 	: 'Waiting for install',
+				message : "Putty is required to use Lockmith. Click okay to install it.",
+				buttons : ['Okay','Cancel']
+			})
 
-							//SET THE SSHPASSPATH
-							sshPassPath = msgParts[x].trim();
-
-							//BREAK OUT OF THE LOOP
-							break;
-						}
-					}
+			//HANDLE CONFIRM/DECLINE DIALOG BOX
+			.then((result) => {
+				if(result.response !== 0){
+					app.quit()
 				}
 				else{
-					iteration ++;
-					return sshpassExistCheck(iteration);
+
+					let execFile = require('child_process').exec;
+					execFile = require('util').promisify(execFile);
+					let response;
+
+					var puttyInstaller = (appMode == 'prod' ? process.resourcesPath : app.getAppPath()) +'\\scripts\\putty-64bit-0.82-installer.msi';
+
+					execFile('msiexec.exe /i "'+puttyInstaller+'"').then(
+						(result) => {
+							console.log(result)
+							response = {err: false, eventHash: d.eventHash, eventName: d.eventName, msg: result.stdout};
+							if(typeof(callback) == 'function') callback(response);
+						},
+						(err) => {
+							dialog.showErrorBox("Putty is required", "Please install putty and try again");
+							app.quit();
+						}
+					);
 				}
 			});
 		}
@@ -278,27 +412,6 @@ async function sshpassExistCheck(maxIterations = 10, iteration = 1){
 
 //CHECK IF SSHPASS IS INSTALLED
 function checkForSshPass(displayInstalled = false, initialCheck = true){
-
-	/*
-	sshpassExistCheck(1).then(
-
-		//SUCCESS
-		(result) => {
-			if(displayInstalled === true){
-				dialog.showMessageBoxSync({
-					type: 'info',
-					title: 'Nice!',
-					detail: "sshpass is installed to: "+sshPassPath
-				});
-			}
-		},
-
-		//FAIL
-		(err) => {
-
-		}
-	);
-	*/
 
 	//LUNUX VS MAC EXECUTABLE CHECK
 	var permCheck = platformMode == 'linux' ? '-executable' : '-perm +111';
@@ -379,28 +492,6 @@ function checkForSshPass(displayInstalled = false, initialCheck = true){
 					cmdString += 'osascript -e \'tell application "Terminal" to close (every window whose name contains "'+tmpCommandName+'")\' & exit;';
 
 					runBash(e,"echo \"#!/bin/bash\n\ssh "+data.keyName+"\" > "+tmpCommandPath+"; chmod +x "+tmpCommandPath+"; open "+tmpCommandPath, (err, stdout, stderr) => {
-
-						/*
-						sshpassExistCheck().then(
-
-							//SUCCESS
-							(result) => {
-								if(displayInstalled === true){
-									dialog.showMessageBoxSync({
-										type: 'info',
-										title: 'Nice!',
-										detail: "sshpass is installed to: "+sshPassPath
-									});
-								}
-							},
-
-							//FAIL
-							(err) => {
-								dialog.showErrorBox("Something went wrong", "sshpass was not found and could not be installed.");
-								app.quit();
-							}
-						);
-						*/
 
 						//SHOW A DIALOG BOX
 						dialog.showMessageBox({
