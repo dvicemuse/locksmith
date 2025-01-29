@@ -119,27 +119,24 @@ function validateForm(){
                                             if(connectionTested) $('#unleashMagic').removeClass('d-none').removeAttr('disabled');
                                         }
                                         else{
-                                            formFields.host.addClass('is-invalid');
-                                            formFields.host.closest('.col').find('.validation-message').addClass('show').html('The host name must be a valid IP address or domain name.');
+                                            formFields.host.addClass('is-invalid').validationPopover('The host name must be a valid IP address or domain name.');
                                         }
                                     }
                                 }
                                 else{
-                                    formFields.password.addClass('is-invalid');
-                                    formFields.password.closest('.col').find('.validation-message').addClass('show').html('The password must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
+                                    formFields.password.addClass('is-invalid').validationPopover('The password must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
 
                                 }
                             }
                         }
                         else{
-                            formFields.userName.addClass('is-invalid');
-                            formFields.userName.closest('.col').find('.validation-message').addClass('show').html('The username must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
+                            formFields.userName.addClass('is-invalid').validationPopover('The username must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
                         }
                     }
                 }
                 else{
-                    formFields.keyName.addClass('is-invalid');
-                    formFields.keyName.closest('.col').find('.validation-message').addClass('show').html('The key name must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
+                    formFields.keyName.addClass('is-invalid').validationPopover('The key name must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
+
                 }
             }
         }
@@ -153,6 +150,17 @@ function validateForm(){
 
 
 }
+
+$.fn.validationPopover = function(message){
+    $(this)
+    .closest('.col')
+    .find('.validation-message')
+    .html('').addClass('popover bs-popover-auto show fade').attr('role', 'tooltip')
+    .html(
+        '<div class="popover-arrow"></div>'+
+              '<div class="popover-body"></div>'
+    ).find('.popover-body').html(message);
+};
 
 $('#locksmith-form').on('submit', function(e){
     e.preventDefault();
