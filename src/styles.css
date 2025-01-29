@@ -9,7 +9,7 @@ input:not([disabled]) { background-color: rgba(255,255,255,0.5) !important; }
 input[disabled], input[readonly]{ background-color: rgba(0,0,0,0.2) !important; }
 *:focus { box-shadow: none !important; }
 input:focus { background-color: rgba(255,255,255,0.8) !important; }
-input[type=text].is-invalid {background-color: rgb(255, 199, 199) !important;}
+input[type=text].is-invalid, input[type=password].is-invalid {background-color: rgb(255, 199, 199) !important;}
 *:not(input) { user-select: none !important }
 .password-input-container {
     position: relative;
@@ -17,12 +17,61 @@ input[type=text].is-invalid {background-color: rgb(255, 199, 199) !important;}
 
 .password-input {
     padding-right: 32px;
+
+    /*background-image:none !important;*/
 }
+
+.password-input.is-invalid {
+    background-image: none !important;
+}
+
 
 .toggle-password {
     position: absolute;
-    top: 10px;
+    top: 7px;
     right: 10px;
     cursor: pointer !important;
     z-index: 9999;
+}
+.col, .col-auto {
+    position: relative;
+}
+.validation-message {
+    display:none;
+}
+.validation-message.show {
+    display: block;
+    position: absolute;
+    font-size: 10px;
+    padding: 6px;
+    background: #737373;
+    border-radius: 3px;
+    max-width: 300px;
+    color: #fff;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 2;
+    margin-top: 5px;
+    box-shadow: rgba(0,0,0,0.3) 0 3px 5px;
+}
+
+.validation-message.show::before {
+    content: '';
+    width: 0;
+      height: 0;
+      border-style: solid;
+      border-right: 7px solid transparent;
+      border-left: 7px solid transparent;
+      border-bottom: 8px solid #737373;
+      border-top: 0;
+      position: absolute;
+      left:0;
+      right:0;
+      width: 15px;
+      display:block;
+      margin-inline: auto;
+        top: -8px;
+
 }

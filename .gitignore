@@ -5,3 +5,7 @@ package-lock.json
 ._forge.config.js
 ._package.json
 src/._main.js
+src/._preload.js
+src/._renderer.js
+src/._styles.css
+*.sublime-*

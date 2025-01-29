@@ -222,7 +222,7 @@ function createWindow() {
 		}
 	});
 
-	if(!withDevtools) mainWindow.setResizable(false);
+
 
   	//LOAD THE MAIN VIEW
 	mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -239,8 +239,7 @@ function createWindow() {
 		console.log(sourceId + " (" + line + ")", message);
 	});
 
-  	// CHECK IF DEVTOOL NEEDS TO BE DISPLAYED
-	if(withDevtools) mainWindow.webContents.openDevTools();
+
 
 	if(platformMode == 'unknown'){
 		dialog.showErrorBox("Unsupported Operating System", "Locksmith only supports Windows, Linux, and MacOS");
@@ -264,7 +263,29 @@ function createWindow() {
 	//CHECK IF THIS IS A COMPILED APP OR A DEV APP
 	require('fs').access(process.resourcesPath+'/scripts/production-check', (err) => {
 		appMode = err ? 'dev' : 'prod';
-		withDevtools = appMode == 'prod' ? false : withDevtools;
+		withDevtools = appMode == 'prod' ? false : true;
+
+		if(!withDevtools) mainWindow.setResizable(false);
+
+		// CHECK IF DEVTOOL NEEDS TO BE DISPLAYED
+		if(withDevtools){
+
+			mainWindow.webContents.openDevTools({mode: 'detach'});
+			/*
+			devtools = new BrowserWindow();
+	    mainWindow.webContents.setDevToolsWebContents(devtools.webContents);
+	    mainWindow.webContents.openDevTools({ mode: 'detach' });
+	    mainWindow.webContents.once('did-finish-load', function () {
+	        var windowBounds = mainWindow.getBounds();
+	        devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
+	        devtools.setSize(windowBounds.width, windowBounds.height);
+	    });
+	    //mainWindow.on('move', function () {
+	    //    var windowBounds = mainWindow.getBounds();
+	    //    devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
+	    //});
+	    */
+	  }
 	});
 }
 
@@ -295,7 +316,7 @@ app.on('window-all-closed', function () {
 
 function runBash(...args) {
 
-	var callback, eventName, cmd;
+	var callback, eventName, cmd, eventHash;
 	var eventData = {event : null, eventName : null, eventHash : null};
 
 	for(var x in args){
