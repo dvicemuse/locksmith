@@ -12,7 +12,8 @@
 AppId={{6BC5F162-3C22-455B-ABDF-322292FA92CE}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
+VersionInfoVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
@@ -27,7 +28,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=C:\Users\brandonmoore\Documents\locksmith\out
+OutputDir=C:\Users\brandonmoore\Documents\locksmith\out\make
 OutputBaseFilename=Locksmith-Setup-2.0.0-Windows-x64
 SetupIconFile=C:\Users\brandonmoore\Documents\locksmith\src\locksmith-icon.ico
 Compression=lzma

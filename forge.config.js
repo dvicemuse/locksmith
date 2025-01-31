@@ -13,7 +13,8 @@ module.exports = {
       './src/locksmith-icon-32.ico'
     ],
     ignore: [
-      './out'
+      './out',
+      './node_modules'
     ],
     appCategoryType: 'public.app-category.developer-tools'
   },

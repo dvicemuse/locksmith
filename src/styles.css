@@ -10,7 +10,7 @@ input:not([disabled]) { background-color: rgba(255,255,255,0.5) !important; }
 input[disabled], input[readonly]{ background-color: rgba(0,0,0,0.2) !important; }
 *:focus { box-shadow: none !important; }
 input:focus { background-color: rgba(255,255,255,0.8) !important; }
-input[type=text].is-invalid, input[type=password].is-invalid {background-color: rgb(255, 199, 199) !important;}
+input[type=text].is-invalid, input[type=password].is-invalid, input[type=number].is-invalid {background-color: rgb(255, 199, 199) !important;}
 *:not(input) { user-select: none !important }
 .password-input-container {
     position: relative;
@@ -71,7 +71,14 @@ input[type=text].is-invalid, input[type=password].is-invalid {background-color: 
     margin-inline: auto;
     width: fit-content;
     max-width: 80%;
+    min-width:50px;
     padding: 0px;
     line-height: 1;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 

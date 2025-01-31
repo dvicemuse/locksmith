@@ -51,11 +51,40 @@ function formFieldValues(){
 
 var validateTimer;
 
+var formFieldsValidators = {
+    keyName: [
+        /^[a-zA-Z0-9-_]+$/,
+        'The key name must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.',
+        'userName',
+    ],
+    userName: [
+        /^[a-zA-Z0-9-_]{3,}$/,
+        'The username must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.',
+        'password',
+    ],
+    password: [
+        /^\S{3,}$/,
+        'The password must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.',
+        'host',
+    ],
+    host: [
+        /(^(\b\d{1,3}\b\.){3}(\b\d{1,3})$)|(^(?!.*(ftp|www|http(s)?))(([A-Za-z0-9-_]{1,}\.)+([A-Za-z0-9]{2,}))$)/i,
+        'The host name must be a valid IP address or domain name.',
+        'port',
+    ],
+    port: [
+        /^[1-9](\d{1,4})?$/,
+        'The port must be between 1 and 99999',
+        'testSSHBtn'
+    ]
+};
+
 function validateForm(){   
 
     clearTimeout(validateTimer);
+    var currentFocus = document.activeElement;
 
-    validateTimer = setTimeout(() => {
+    //validateTimer = setTimeout(() => {
         var mainWindowHeight = 650;
         var mainWindowWidth = 600;
 
@@ -77,7 +106,6 @@ function validateForm(){
             $('#password').attr('type', 'password');
             $('.leashed').hide();
             mainWindowHeight = 450;
-
         }
         else{
             $('#tryItBtn').attr('disabled', true);
@@ -85,74 +113,36 @@ function validateForm(){
             $('#unleashMagic').addClass('d-none');
             $('#nowUseWrap').addClass('d-none');
 
-            if(formFields.keyName.val().length){
-
-                var keyNamePattern = /^[a-zA-Z0-9-_]+$/;
-                if(keyNamePattern.test(formFields.keyName.val())){
-
-                    formFields.userName.removeAttr('disabled');
-
-                    if(formFields.userName.val().length){
-
-                        var userNamePattern = /^[a-zA-Z0-9-_]{3,}$/;
-                        if(userNamePattern.test(formFields.userName.val())){
-                            formFields.password.removeAttr('disabled');
-
-                            if(formFields.password.val().length){
-                                $('.toggle-password').removeClass('d-none');
-
-                                var passwordPattern = /^\S{3,}$/;
-                                if(passwordPattern.test(formFields.password.val())){
-
-                                    formFields.host.removeAttr('disabled');
-
-                                    if(formFields.host.val().length) formFields.port.removeAttr('disabled');
-
-                                    if(formFields.host.val().length && formFields.port.val().length){
-
-                                        var pattern = /(^(\b\d{1,3}\b\.){3}(\b\d{1,3})$)|(^(?!.*(ftp|www|http(s)?))(([A-Za-z0-9-_]{1,}\.)+([A-Za-z0-9]{2,}))$)/i;
-                                        if(pattern.test(formFields.host.val())){
-                                            $('#testUnleashWrap').removeClass('d-none');
-                                            $('#testSSHBtn').removeAttr('disabled');
-                                            mainWindowHeight = 700;
-
-                                            if(connectionTested) $('#unleashMagic').removeClass('d-none').removeAttr('disabled');
-                                        }
-                                        else{
-                                            formFields.host.addClass('is-invalid').validationPopover('The host name must be a valid IP address or domain name.');
-                                        }
-                                    }
-                                }
-                                else{
-                                    formFields.password.addClass('is-invalid').validationPopover('The password must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
-
-                                }
+            if(formFields.keyName.validateRegex()){
+                if(formFields.userName.validateRegex()){
+                    if(formFields.password.validateRegex()){
+                        if(formFields.host.validateRegex()){
+                            if(formFields.port.validateRegex()){
+                                $('#testUnleashWrap').removeClass('d-none');
+                                mainWindowHeight = 700;
+                                if(connectionTested) $('#unleashMagic').removeClass('d-none').removeAttr('disabled');
                             }
-                        }
-                        else{
-                            formFields.userName.addClass('is-invalid').validationPopover('The username must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
                         }
                     }
                 }
-                else{
-                    formFields.keyName.addClass('is-invalid').validationPopover('The key name must be at least 3 characters and may only contain letters, numbers, underscores, and hyphens.');
-
-                }
             }
         }
+
+        if(currentFocus) currentFocus.focus();
 
         $(window).dispatch('setWindowSize', {
             width: mainWindowWidth,
             height: mainWindowHeight,
             animate: true,
         });
-    }, 500);
+    //}, 500);
 
 
 }
 
 $.fn.validationPopover = function(message){
     $(this)
+    .addClass('is-invalid')
     .closest('.col')
     .find('.validation-message')
     .html('').addClass('popover bs-popover-auto show fade').attr('role', 'tooltip')
@@ -161,6 +151,20 @@ $.fn.validationPopover = function(message){
               '<div class="popover-body"></div>'
     ).find('.popover-body').html(message);
 };
+
+$.fn.validateRegex = function(){
+    if(this.val().length == 0 && this.attr('id') != 'port') return false;
+    var pattern = formFieldsValidators[this.attr('id')][0];
+    var message = formFieldsValidators[this.attr('id')][1];
+    var nextEle = $('#'+formFieldsValidators[this.attr('id')][2]);
+    if(formFields.password.val().length) $('.toggle-password').removeClass('d-none');
+    if(!pattern.test($(this).val())){
+        $(this).validationPopover(message);
+        return false;
+    }
+    if(nextEle.length) nextEle.removeAttr('disabled');
+    return true;
+}
 
 $('#locksmith-form').on('submit', function(e){
     e.preventDefault();
@@ -177,7 +181,8 @@ $(window).on('fromMainController', function(e, data){
     }
 });
 
-$(".toggle-password").click(function () {
+$(".toggle-password").click(function (e) {
+    e.preventDefault();
     var passwordInput = $($(this).siblings(".password-input"));
     var icon = $(this);
     if (passwordInput.attr("type") == "password") {
@@ -187,6 +192,7 @@ $(".toggle-password").click(function () {
         passwordInput.attr("type", "password");
         icon.removeClass("fa-eye-slash").addClass("fa-eye");
     }
+    passwordInput.focus();
 });
 
 $('button[disabled]').click(function(e){
