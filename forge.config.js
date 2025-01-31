@@ -14,7 +14,8 @@ module.exports = {
     ],
     ignore: [
       './out',
-      './node_modules'
+      './node_modules',
+      './dist'
     ],
     appCategoryType: 'public.app-category.developer-tools'
   },
