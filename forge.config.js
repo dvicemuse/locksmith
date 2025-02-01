@@ -28,9 +28,18 @@ module.exports = {
       },
     },
     {
+      name: '@electron-forge/maker-dmg',
+      config: {
+        //background: './assets/dmg-background.png',
+        icon: './src/locksmith-icon.icns',
+        format: 'ULFO'
+      }
+    },
+    /*{
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
+    */
     {
       name: '@electron-forge/maker-deb',
       config: {
