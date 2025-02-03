@@ -1,7 +1,8 @@
 body { background: rgb(75,194,255); color:#fff; overflow:hidden !important; }
-input::placeholder { font-size: 10px; opacity: 0.6 !important; }
+input {color:#000 !important; opacity: 0.6 !important;}
+input::placeholder { font-size: 10px; color:#000 !important; opacity: 0.6 !important; }
 input[disabled]::placeholder { opacity: 0 !important; }
-input[disabled] { color:#fff !important; }
+input[disabled]{ color:#000 !important; }
 .form-control,.btn { border-radius:0 !important; }
 .container { width:498px; }
 #port { width: 80px; }
@@ -9,20 +10,75 @@ input:not([disabled]) { background-color: rgba(255,255,255,0.5) !important; }
 input[disabled], input[readonly]{ background-color: rgba(0,0,0,0.2) !important; }
 *:focus { box-shadow: none !important; }
 input:focus { background-color: rgba(255,255,255,0.8) !important; }
-input[type=text].is-invalid {background-color: rgb(255, 199, 199) !important;}
+input[type=text].is-invalid, input[type=password].is-invalid, input[type=number].is-invalid {background-color: rgb(255, 199, 199) !important;}
 *:not(input) { user-select: none !important }
 .password-input-container {
     position: relative;
 }
 
+.form-label {
+    margin-bottom:.3rem;
+    font-size:12px;
+}
+
 .password-input {
     padding-right: 32px;
+
+    /*background-image:none !important;*/
 }
+
+.password-input.is-invalid {
+    background-image: none !important;
+}
+
 
 .toggle-password {
     position: absolute;
-    top: 10px;
+    top: 7px;
     right: 10px;
     cursor: pointer !important;
     z-index: 9999;
 }
+.col, .col-auto {
+    position: relative;
+}
+.validation-message {
+    display:none ;
+}
+.validation-message.show {
+    display: block;
+    position: absolute;
+    max-width: 300px;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    z-index: 2;
+    margin-top: 5px;
+}
+
+.validation-message .popover-arrow {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    margin-inline: auto;
+}
+
+.validation-message.bs-popover {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    width: fit-content;
+    max-width: 80%;
+    min-width:50px;
+    padding: 0px;
+    line-height: 1;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
